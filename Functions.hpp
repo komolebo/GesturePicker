@@ -46,9 +46,9 @@ void orderContourFromOrigin(Contour &);
 /*
  * IO functions
  */
-void appendFile(const char *name, const Contour &pattern);
+void appendFile(const Contour &pattern);
 
-void readFile(const char *name, vector<Contour> &patterns);
+void readFile(vector<Contour> &patterns);
 
 void dumpMessage(Mat src, string text);
 

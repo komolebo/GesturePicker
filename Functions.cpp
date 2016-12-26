@@ -1,4 +1,5 @@
 #include <sstream>
+#include <fstream>
 #include "Functions.hpp"
 
 
@@ -15,7 +16,7 @@ float getAngle(Point s, Point f, Point e){
 }
 
 void dumpMessage(Mat src, string text) {
-    putText(src, text, Point(src.cols / 2, src.rows / 10), FONT_HERSHEY_PLAIN, 2.f, Scalar(255, 0, 0), 2);
+    putText(src, text, Point(0, src.rows - 10), FONT_HERSHEY_PLAIN, 1.2f, Scalar(0, 255, 0), 2);
 }
 
 
@@ -57,7 +58,7 @@ void getAverageColor(const ColSensor &sensor, int *avg) {
     Mat r;
     vector<int> r_vec, g_vec, b_vec;
 
-    sensor.detect_area.copyTo(r);
+    sensor.getDetectArea().copyTo(r);
 
     // generate vectors
     for (int i = sensor.BORDER_THICKNESS; i < r.rows - sensor.BORDER_THICKNESS; i++)
@@ -104,18 +105,17 @@ int findBiggestContour(const vector<Contour> &contours){
 }
 
 void makeContours(FramesHolder *m, HandGesture* hg){
-    Mat mat_bw;
     pyrUp(m->bw,m->bw);
-    m->bw.copyTo(mat_bw);
+	Mat mat_bw = m->bw.clone();
 
-    vector<Contour> contours = vector<Contour>();
+	vector<Contour> contours = vector<Contour>();
     findContours(mat_bw, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
-    int biggest_id = findBiggestContour(contours);
-
-    hg->initVectors();
+	int biggest_id = findBiggestContour(contours);
+	
+	hg->initVectors();
     if (biggest_id != -1) {
-        hg->analyzeContour(contours[biggest_id]);
+		hg->analyzeContour(contours[biggest_id]);
         hg->analyzeBRect();
     }
 }
@@ -153,8 +153,8 @@ void orderContourFromOrigin(Contour &c) {
     c.swap(new_contour);
 }
 
-void readFile(const char *name, vector<Contour> &patterns) {
-    ifstream f(name);
+void readFile(vector<Contour> &patterns) {
+    ifstream f("AppData/GesturePicker/Patterns/Patterns.txt");
 
     if (!f) return;
 
@@ -180,8 +180,8 @@ void readFile(const char *name, vector<Contour> &patterns) {
     f.close();
 }
 
-void appendFile(const char *name, const Contour &pattern) {
-    ofstream f(name, std::ios_base::app);
+void appendFile(const Contour &pattern) {
+    ofstream f("AppData/GesturePicker/Patterns/Patterns.txt", std::ios_base::app);
 
     if (!f || pattern.empty()) return;
 
@@ -200,6 +200,8 @@ float compareFigures(const Figure &fig1, const Figure &fig2) {
     Figure *n_fig1 = normalize(fig1);
     Figure *n_fig2 = normalize(fig2);
 
+	if (n_fig1 == NULL || n_fig2 == NULL) return 1.0;
+
     long n = max(n_fig1->size(), n_fig2->size());
 
     // Make them same-sized
@@ -207,7 +209,6 @@ float compareFigures(const Figure &fig1, const Figure &fig2) {
     for (int i = 0; i < n - smaller->size(); i++)
         smaller->push_back(Point(0, 0));
 
-    // Count difference
     float dif_x = 0, dif_y = 0;
     for (int i = 0; i < n; i++) {
         dif_x += abs((*n_fig1)[i].x - (*n_fig2)[i].x);
@@ -226,9 +227,7 @@ float compareFigures(const Figure &fig1, const Figure &fig2) {
 }
 
 Figure *normalize(const Figure &fig) {
-    Figure *new_fig = new Figure();
-
-    float max_dx = 0;
+	float max_dx = 0;
     float max_dy = 0;
 
     for (const CvPoint2D32f &p: fig) {
@@ -238,8 +237,17 @@ Figure *normalize(const Figure &fig) {
             max_dy = abs(p.y);
     }
 
-    for (const CvPoint2D32f &p: fig)
-        new_fig->push_back(CvPoint2D32f(p.x / max_dx, p.y / max_dy));
+	if (max_dx < 1 || max_dy < 1) return NULL;
+	
+	Figure *new_fig = new Figure();
+
+	for (const CvPoint2D32f &p : fig) {
+		CvPoint2D32f point;
+		point.x = p.x / max_dx;
+		point.y = p.y / max_dy;
+
+		new_fig->push_back(point);
+	}
 
     return new_fig;
 }

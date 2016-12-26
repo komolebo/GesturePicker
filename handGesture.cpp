@@ -28,7 +28,7 @@ void HandGesture::eliminateDefects() {
     vector<Vec4i> newDefects;
     int startidx, endidx, faridx;
     for (vector<Vec4i>::iterator d = defects.begin(); d != defects.end(); d++) {
-        Vec4i &v = (*d);
+        Vec4i v = (*d);
 
         startidx = v[0];
         endidx = v[1];
@@ -51,7 +51,7 @@ void HandGesture::eliminateDefects() {
 }
 
 // remove endpoint of convexity defects if they are at the same fingertip
-void HandGesture::removeRedundantEndPoints(vector<Vec4i> newDefects) {
+void HandGesture::removeRedundantEndPoints(const vector<Vec4i> &newDefects) {
     float tolerance = bRect.width / 6;
     int startidx, endidx;
     int startidx2, endidx2;
@@ -112,7 +112,7 @@ void HandGesture::formPalmContour() {
     palmFigure = convertPattern2Figure(palmContour);
 }
 
-void HandGesture::analyzeContour(Contour &c) {
+void HandGesture::analyzeContour(Contour c) {
     contour = c;
     bRect = boundingRect(Mat(contour));
 

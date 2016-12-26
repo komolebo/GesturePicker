@@ -1,16 +1,28 @@
-#include "opencv2/imgproc/imgproc.hpp"
 #include "Starter.h"
 
-using namespace cv;
 using namespace std;
 
-
-int main() {
+int main(int argc, char *argv[]) {
     Starter starter = Starter();
 
-    starter.readPalmColor();
+	// Full mode
+	if (argc == 1) {
+		starter.readPalmColor();
+		//starter.addPattern();
+		starter.recognize();
+	}
 
-    starter.addPattern();
+	// Add mode
+	if (argc == 2 && strcmp(argv[1], "add") == 0) {
+		starter.readPalmColor();
+		starter.addPattern();
+	}
 
-    starter.recognize();
+	// Recognizing mode
+	if (argc == 2 && strcmp(argv[1], "rec") == 0) {
+		starter.readPalmColor();
+		starter.recognize();
+	}
+
+	return 0;
 }

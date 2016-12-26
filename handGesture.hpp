@@ -3,13 +3,11 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
-#include <vector>
 #include <string>
 #include "data.hpp"
 
 
 using namespace cv;
-using namespace std;
 
 
 class HandGesture {
@@ -28,7 +26,7 @@ public:
 
     void initVectors();
 
-    void analyzeContour(Contour &);
+    void analyzeContour(Contour );
 
     void analyzeBRect();
 
@@ -39,7 +37,7 @@ public:
     bool isHand() const { return mayBeHand; }
 
 private:
-    void removeRedundantEndPoints(vector<Vec4i> newDefects);
+    void removeRedundantEndPoints(const vector<Vec4i> &newDefects);
 
     void eliminateDefects();
 

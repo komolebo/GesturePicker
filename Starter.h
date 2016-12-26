@@ -4,12 +4,13 @@
 
 #include "data.hpp"
 #include "handGesture.hpp"
+#include <vector>
 
 enum State {PAUSE, WORKING};
 
 class Starter {
 public:
-    Starter() : state(WORKING) {m.src = 0; };
+	Starter() : state(WORKING) { m.src = 0; col_detectors.clear();  };
 
     void readPalmColor();
 
@@ -18,7 +19,7 @@ public:
     void addPattern();
 
 private:
-    void waitForPalmCover(FramesHolder *m, vector<ColSensor> &col_detectors);
+    void waitForPalmCover(FramesHolder *m);
 
     void showWindows(FramesHolder m);
 
@@ -29,6 +30,7 @@ private:
 
     FramesHolder m;
     HandGesture hg;
+	std::vector<ColSensor> col_detectors;
 };
 
 
